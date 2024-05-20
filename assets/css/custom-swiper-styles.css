@@ -1,6 +1,5 @@
 .mySwiper{
     height: 500px;
-    background-color: #ababab;
     box-sizing: border-box;
 }
 
@@ -16,11 +15,15 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: white;
+  background-color: rgb(151, 164, 176);
 }
 
 .swiper-slide .edb-post-carousel{
   padding: 10px 40px;
+}
+
+.swiper-slide time{
+  color: #fff;
 }
 
 .swiper-slide h4 a {

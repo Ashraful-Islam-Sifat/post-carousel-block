@@ -12,6 +12,22 @@
     "html": false
   },
   "attributes": {
+    "carouselInfiniteLoop": {
+      "type": "boolean",
+      "default": false
+    },
+    "carouselAutoplay": {
+      "type": "boolean",
+      "default": true
+    },
+    "displayFeaturedImage": {
+      "type": "boolean",
+      "default": true
+    },
+    "dynamicBullets": {
+      "type": "boolean",
+      "default": false
+    },
     "order": {
       "type": "string",
       "default": "desc"

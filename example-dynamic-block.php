@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-function render_swipper(  ) {
+function render_swipper($attributes) {
 
   $args = array(
 		'posts_per_page' => 5,
@@ -44,12 +44,13 @@ function render_swipper(  ) {
           ?>
           <div class="swiper-slide">
               <div class="edb-post-carousel">
-                <?php if (has_post_thumbnail($post)): ?>
+                <?php if ( $attributes['displayFeaturedImage'] && has_post_thumbnail($post)): ?>
                     <div class="post-thumbnail">
                         <?php echo get_the_post_thumbnail($post, 'thumbnail'); // Use 'medium' size ?>
                     </div>
                 <?php endif; ?>
                   <h4><a href="<?php echo $permalink; ?>"><?php echo $title; ?></a></h4>
+                  <time datetime="<?php echo esc_attr( get_the_date( 'c', $post ) ) ?>"><?php echo esc_html( get_the_date( '', $post ) ) ?></time>
                   <p><?php echo $excerpt; ?></p>
               </div>
           </div>
@@ -68,27 +69,19 @@ function render_swipper(  ) {
       var swiper = new Swiper(".mySwiper", {
         spaceBetween: 30,
         centeredSlides: true,
-        autoplay: {
-          delay: 2500,
-          disableOnInteraction: false,
-        },
+        autoplay: <?php echo $attributes['carouselAutoplay'] ? json_encode(array(
+            'delay' => 2500,
+            'disableOnInteraction' => false
+        )) : 'false'; ?>,
         pagination: {
           el: ".swiper-pagination",
-          clickable: true,
-          dynamicBullets: true,
+          clickable: true
         },
         navigation: {
           nextEl: ".swiper-button-next",
           prevEl: ".swiper-button-prev",
         },
-      });
-
-      swiper.on('slideChange', function () {
-        swiper.autoplay.start();
-      });
-
-      swiper.on('touchEnd', function () {
-        swiper.autoplay.start();
+        loop: <?php echo json_encode($attributes['carouselInfiniteLoop']); ?>
       });
     });
   </script>
