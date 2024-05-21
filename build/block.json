@@ -24,13 +24,23 @@
       "type": "boolean",
       "default": true
     },
-    "dynamicBullets": {
-      "type": "boolean",
-      "default": false
+    "PostsToShow": {
+      "type": "number",
+      "default": 5
     },
     "order": {
       "type": "string",
       "default": "desc"
+    },
+    "orderBy": {
+      "type": "string",
+      "default": "date"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
     }
   },
   "textdomain": "example-dynamic-block",

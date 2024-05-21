@@ -54,22 +54,54 @@ function Edit({
     displayFeaturedImage,
     carouselAutoplay,
     carouselInfiniteLoop,
-    dynamicBullets
+    PostsToShow,
+    orderBy,
+    order,
+    categories
   } = attributes;
   const [activeTab, setActiveTab] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)('card container');
+  const catIDs = categories && categories.length > 0 ? categories.map(cat => cat.id) : [];
   const posts = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_5__.useSelect)(select => {
     return select('core').getEntityRecords('postType', 'post', {
-      per_page: 5,
+      per_page: PostsToShow,
       _embed: true,
-      order: 'desc',
-      orderby: 'date'
+      order,
+      orderby: orderBy,
+      categories: catIDs
     });
-  });
+  }, [PostsToShow, order, orderBy, categories]);
   const swiperRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)(null);
   const autoplayConfig = carouselAutoplay ? {
     delay: 2500,
     disableOnInteraction: false
   } : false;
+  const onNumberOfPostChange = newValue => {
+    setAttributes({
+      PostsToShow: newValue
+    });
+  };
+  const allCats = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_5__.useSelect)(select => {
+    return select('core').getEntityRecords('taxonomy', 'category', {
+      per_page: -1
+    });
+  }, []);
+  const catSuggestions = {};
+  if (allCats) {
+    for (let i = 0; i < allCats.length; i++) {
+      const cat = allCats[i];
+      catSuggestions[cat.name] = cat;
+    }
+  }
+  const onCategoryChange = values => {
+    const hasNoSuggestions = values.some(value => typeof value == 'string' && !catSuggestions[value]);
+    if (hasNoSuggestions) return;
+    const updateCats = values.map(token => {
+      return typeof token == 'string' ? catSuggestions[token] : token;
+    });
+    setAttributes({
+      categories: updateCats
+    });
+  };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
     if (swiperRef.current && swiperRef.current.swiper) {
       if (carouselAutoplay) {
@@ -78,7 +110,7 @@ function Edit({
         swiperRef.current.swiper.autoplay.stop();
       }
     }
-  }, [carouselAutoplay]);
+  }, [carouselAutoplay, posts]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
     if (swiperRef.current && swiperRef.current.swiper) {
       const swiperInstance = swiperRef.current.swiper;
@@ -110,7 +142,6 @@ function Edit({
       }
     }
   }, [carouselInfiniteLoop]);
-  console.log(dynamicBullets);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.TabPanel, {
     className: "pc-tab-panel",
     activeClass: "pc-active-tab",
@@ -176,21 +207,29 @@ function Edit({
     },
     checked: carouselAutoplay
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToggleControl, {
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Infinite loop'),
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Infinite loop', 'example-dynamic-block'),
     onChange: v => {
       setAttributes({
         carouselInfiniteLoop: v
       });
     },
     checked: carouselInfiniteLoop
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToggleControl, {
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Dunamic Bullets'),
-    onChange: v => {
-      setAttributes({
-        dynamicBullets: v
-      });
-    },
-    checked: dynamicBullets
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.QueryControls, {
+    numberOfItems: PostsToShow,
+    onNumberOfItemsChange: onNumberOfPostChange,
+    maxItems: 15,
+    minItems: 3,
+    orderBy: orderBy,
+    onOrderByChange: v => setAttributes({
+      orderBy: v
+    }),
+    order: order,
+    onOrderChange: v => setAttributes({
+      order: v
+    }),
+    categorySuggestions: catSuggestions,
+    selectedCategories: categories,
+    onCategoryChange: onCategoryChange
   })), tab.name === 'styles' && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "pc-tabs-content"
   }, "This is styles")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -11575,7 +11614,7 @@ SwiperSlide.displayName = 'SwiperSlide';
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"wpdev/example-dynamic-block","version":"0.1.0","title":"Example Dynamic Block","category":"widgets","icon":"smiley","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"attributes":{"carouselInfiniteLoop":{"type":"boolean","default":false},"carouselAutoplay":{"type":"boolean","default":true},"displayFeaturedImage":{"type":"boolean","default":true},"dynamicBullets":{"type":"boolean","default":false},"order":{"type":"string","default":"desc"}},"textdomain":"example-dynamic-block","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"wpdev/example-dynamic-block","version":"0.1.0","title":"Example Dynamic Block","category":"widgets","icon":"smiley","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"attributes":{"carouselInfiniteLoop":{"type":"boolean","default":false},"carouselAutoplay":{"type":"boolean","default":true},"displayFeaturedImage":{"type":"boolean","default":true},"PostsToShow":{"type":"number","default":5},"order":{"type":"string","default":"desc"},"orderBy":{"type":"string","default":"date"},"categories":{"type":"array","items":{"type":"object"}}},"textdomain":"example-dynamic-block","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js"}');
 
 /***/ })
 

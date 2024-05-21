@@ -4,7 +4,7 @@ import { RawHTML, useState } from '@wordpress/element';
 import { format, dateI18n, getSettings } from '@wordpress/date';
 import { useSelect } from '@wordpress/data';
 import './editor.scss';
-import { ToggleControl, TabPanel } from '@wordpress/components';
+import { ToggleControl, TabPanel, QueryControls } from '@wordpress/components';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -14,19 +14,23 @@ import { useEffect, useRef } from '@wordpress/element';
 
 export default function Edit( { attributes, setAttributes } ) {   
 
-    const { displayFeaturedImage, carouselAutoplay, carouselInfiniteLoop, dynamicBullets } = attributes;
+    const { displayFeaturedImage, carouselAutoplay, carouselInfiniteLoop, PostsToShow, orderBy, order, categories } = attributes;
 
     const [activeTab, setActiveTab] = useState('card container');
+
+    const catIDs = categories && categories.length > 0 ? categories.map((cat)=> cat.id) : [];
 
 	const posts = useSelect(
 		(select) => {
 			return select('core').getEntityRecords('postType', 'post', {
-				per_page: 5,
+				per_page: PostsToShow,
 				_embed: true,
-				order: 'desc',
-				orderby: 'date'
+				order,
+				orderby: orderBy,
+				categories: catIDs
 			});
-		}
+		},
+        [PostsToShow, order, orderBy, categories]
 	);
 
 	const swiperRef = useRef(null)
@@ -37,6 +41,35 @@ export default function Edit( { attributes, setAttributes } ) {
             disableOnInteraction: false,
         }
         : false; 
+    
+    const onNumberOfPostChange = (newValue) => {
+        setAttributes({ PostsToShow: newValue })
+    }
+
+    const allCats = useSelect((select) => {
+		return select('core').getEntityRecords('taxonomy', 'category', {
+			per_page: -1,
+		});
+	}, []);
+
+    const catSuggestions = {};
+	if (allCats) {
+		for (let i = 0; i < allCats.length; i++) {
+			const cat = allCats[i];
+			catSuggestions[cat.name] = cat;
+		}
+	}	
+
+    const onCategoryChange = (values) => {
+		const hasNoSuggestions = values.some((value) => typeof value == 'string' && !catSuggestions[value]);
+		if (hasNoSuggestions) return;
+
+		const updateCats = values.map((token)=> {
+			return typeof token == 'string' ? catSuggestions[token] : token;
+		})
+		
+		setAttributes({categories: updateCats})
+	}
 
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.swiper) {
@@ -46,7 +79,7 @@ export default function Edit( { attributes, setAttributes } ) {
                 swiperRef.current.swiper.autoplay.stop();
             }
         }
-    }, [carouselAutoplay]);
+    }, [carouselAutoplay, posts]);
 
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.swiper) {
@@ -82,8 +115,6 @@ export default function Edit( { attributes, setAttributes } ) {
             }
         }
     }, [carouselInfiniteLoop]);
-
-    console.log(dynamicBullets);
 
     return (
         <>
@@ -167,15 +198,23 @@ export default function Edit( { attributes, setAttributes } ) {
                                 checked={carouselAutoplay}
                             />
                             <ToggleControl
-                                label={__('Infinite loop')}
+                                label={__('Infinite loop', 'example-dynamic-block')}
                                 onChange={ (v) => {setAttributes({carouselInfiniteLoop: v})} }
                                 checked={carouselInfiniteLoop}
                             />
-                            <ToggleControl
-                                label={__('Dunamic Bullets')}
-                                onChange={ (v) => {setAttributes({dynamicBullets: v})} }
-                                checked={dynamicBullets}
-                            />
+                            <QueryControls 
+				                numberOfItems={PostsToShow} 
+				            	onNumberOfItemsChange={onNumberOfPostChange}
+				            	maxItems={15}
+				            	minItems={3}
+				            	orderBy={orderBy}
+				            	onOrderByChange= {(v)=> setAttributes({ orderBy: v })}
+				            	order={order}
+				            	onOrderChange= {(v)=> setAttributes({ order: v })}
+				            	categorySuggestions= {catSuggestions}
+				            	selectedCategories={categories}					
+				            	onCategoryChange={onCategoryChange}
+				            />
                         </div>
                     )}
                     {tab.name === 'styles' && (

@@ -20,11 +20,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 function render_swipper($attributes) {
 
   $args = array(
-		'posts_per_page' => 5,
+		'posts_per_page' => $attributes['PostsToShow'],
 		'post_status' => 'publish',
-		'order' => 'desc',
-		'orderBy' => 'date'
+		'order' => $attributes['order'],
+		'orderBy' => $attributes['orderBy']
 	);
+
+  if(isset($attributes['categories'])){
+		$args['category__in'] = array_column($attributes['categories'], 'id');
+	}
 
   $recent_posts = get_posts( $args );
 
